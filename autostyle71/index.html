@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=8">
 <script type="importmap">{"imports":{"three":"./vendor/three.min.js"}}</script>
 <link rel="preload" as="image" href="img/hero.webp" media="(min-width: 621px)">
 </head>
@@ -59,9 +59,13 @@
 
   <section id="tint" class="tryon">
     <div class="wrap">
-      <div class="stage" id="stage">
+      <div class="stage" id="stage" role="group" aria-label="3D-модель Volvo S90 с тонировкой: поворачивается мышью, пальцем или кнопками">
         <div class="stage-load" id="stage-load">Загружаем 3D-модель <span>0%</span></div>
         <span class="drag-hint" id="drag-hint">← покрутите машину →</span>
+        <div class="turn" id="turn" hidden>
+          <button type="button" data-turn="-1" aria-label="Повернуть машину влево">←</button>
+          <button type="button" data-turn="1" aria-label="Повернуть машину вправо">→</button>
+        </div>
         <div class="readout"><b id="readout-pct">15%</b><span>пропускают задние стёкла</span></div>
       </div>
       <div class="tryon-text">
@@ -211,6 +215,13 @@
   <a class="btn btn-ghost" href="https://yandex.ru/maps/?text=%D0%A2%D1%83%D0%BB%D0%B0%2C%20%D0%A9%D0%B5%D0%BA%D0%B8%D0%BD%D1%81%D0%BA%D0%BE%D0%B5%20%D1%88%D0%BE%D1%81%D1%81%D0%B5%2C%2055" target="_blank" rel="noopener">Маршрут</a>
 </div>
 
-<script type="module" src="scene.js?v=13"></script>
+<script type="module" src="scene.js?v=14"></script>
+<script>
+  // module scripts run before "load": if the 3D script never started (no import maps, blocked file), say so
+  addEventListener("load", function () {
+    var s = document.getElementById("stage-load");
+    if (!window.tryonStarted && s) s.textContent = "3D не запустился в этом браузере. Плотность плёнки можно выбрать кнопками.";
+  });
+</script>
 </body>
 </html>
