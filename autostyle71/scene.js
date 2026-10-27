@@ -52,7 +52,11 @@ function init() {
   controls.minPolarAngle = Math.PI * 0.32;
   controls.maxPolarAngle = Math.PI * 0.47;
   renderer.domElement.style.touchAction = "pan-y"; // keep vertical page scroll on phones
-  controls.addEventListener("start", () => { hint.style.opacity = 0; controls.autoRotate = false; });
+  // OrbitControls with damping only moves the camera inside update(), so the loop must keep running
+  // for the whole drag and until the inertia has died out — not stop after one frame
+  let dragging = false;
+  controls.addEventListener("start", () => { hint.style.opacity = 0; dragging = true; wake(); });
+  controls.addEventListener("end", () => { dragging = false; wake(); });
 
   const film = (vlt) => new THREE.MeshPhysicalMaterial({
     color: 0x07090c, metalness: 0, roughness: 0.08, envMapIntensity: 0.45,
@@ -87,6 +91,7 @@ function init() {
     car.traverse((o) => {
       if (!o.isMesh) return;
       const n = key(o.name);
+      if (o.material?.name !== "Glass") return; // only real glass: name prefixes also match frames and null backings
       if (REAR.some((r) => n.startsWith(r))) o.material = rearGlass;
       else if (FRONT.some((r) => n.startsWith(r))) o.material = frontGlass;
       else if (WINDSHIELD.some((r) => n.startsWith(r))) o.material = windshield;
@@ -144,9 +149,9 @@ function init() {
     const dt = Math.min((now - last) / 1000, 0.05);
     last = now;
     rearGlass.opacity += (target - rearGlass.opacity) * Math.min(dt * 7, 1);
-    controls.update(dt);
+    const moved = controls.update(dt);
     renderer.render(scene, camera);
-    const settled = Math.abs(target - rearGlass.opacity) < 0.002 && !controls.autoRotate;
+    const settled = Math.abs(target - rearGlass.opacity) < 0.002 && !dragging && !moved;
     if (!visible || settled) { running = false; return; }
     requestAnimationFrame(frame);
   }
