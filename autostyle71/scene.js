@@ -86,10 +86,12 @@ function init() {
   // backup: some browsers never report the section as visible, so fetch anyway once the page has settled
   addEventListener("load", () => setTimeout(start, 5000), { once: true });
 
-  const loadCar = () => loader.load("model/volvo.glb?v=6", (gltf) => {
+  const loadCar = () => loader.load("model/volvo.glb?v=7", (gltf) => {
     const car = gltf.scene;
     car.traverse((o) => {
       if (!o.isMesh) return;
+      // thin see-through parts (lamps, trim glass) look the same in one pass and save a draw call each
+      if (o.material.transparent) o.material.forceSinglePass = true;
       const n = key(o.name);
       if (o.material?.name !== "Glass") return; // only real glass: name prefixes also match frames and null backings
       if (REAR.some((r) => n.startsWith(r))) o.material = rearGlass;
