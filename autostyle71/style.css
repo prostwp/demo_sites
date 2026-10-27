@@ -177,5 +177,5 @@ footer a { color: var(--muted); }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .view .film, .works img { transition: none; }
+  .works img { transition: none; }
 }
