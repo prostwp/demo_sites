@@ -75,12 +75,12 @@ function init() {
 
   // the model is ~14 MB: fetch it only when the visitor scrolls close to this section
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
-  const nearby = new IntersectionObserver(([e]) => {
-    if (!e.isIntersecting) return;
-    nearby.disconnect();
-    loadCar();
-  }, { rootMargin: "600px 0px" });
+  let started = false;
+  const start = () => { if (started) return; started = true; nearby.disconnect(); loadCar(); };
+  const nearby = new IntersectionObserver(([e]) => { if (e.isIntersecting) start(); }, { rootMargin: "600px 0px" });
   nearby.observe(stage);
+  // backup: some browsers never report the section as visible, so fetch anyway once the page has settled
+  addEventListener("load", () => setTimeout(start, 5000), { once: true });
 
   const loadCar = () => loader.load("model/volvo.glb?v=6", (gltf) => {
     const car = gltf.scene;
