@@ -1,11 +1,11 @@
 :root {
   --bg: #FFFFFF; --warm: #F5EFE8; --ink: #14281F; --muted: #55635B; --line: #E6E0D8;
   --green: #1E6447; --green-dark: #154A34; --green-soft: #DCEDE3;
-  --accent: #F26B3A; --accent-dark: #D9562A;
+  --accent: #B8471B; --accent-dark: #9E3A14; /* 5.3:1 on white, 4.6:1 on --warm (WCAG AA for text) */
   --font: "Onest", "Segoe UI", system-ui, sans-serif;
 }
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; scroll-padding-top: 84px; } /* menu jumps land below the sticky header */
 body { margin: 0; background: var(--bg); color: var(--ink); font: 400 17px/1.55 var(--font); }
 img { display: block; max-width: 100%; }
 a { color: var(--green); }
