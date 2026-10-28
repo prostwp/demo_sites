@@ -10,8 +10,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="style.css?v=1">
+<link rel="stylesheet" href="style.css?v=2">
 <link rel="preload" as="image" href="img/hero.webp">
+<script type="importmap">{"imports":{"three":"./vendor/three.min.js"}}</script>
 </head>
 <body>
 <!--
@@ -28,6 +29,7 @@
     <nav class="nav" aria-label="Разделы">
       <a href="#make">Что делаем</a>
       <a href="#path">Как работаем</a>
+      <a href="#konstruktor">3D-конструктор</a>
       <a href="#works">Работы</a>
       <a href="#contacts">Контакты</a>
     </nav>
@@ -47,7 +49,7 @@
         <p class="lead">Шкафы-купе, кухни и гардеробные под размер вашей комнаты. Замерщик приезжает бесплатно, а дальше проект, производство, доставка и сборка — всё делаем сами.</p>
         <div class="actions">
           <a class="btn btn-main" href="#zamer">Вызвать замерщика</a>
-          <a class="btn btn-line" href="#path">Как мы работаем</a>
+          <a class="btn btn-line" href="#konstruktor">Собрать шкаф в 3D</a>
         </div>
         <ol class="track" aria-label="Путь заказа">
           <li>Замер</li><li>Проект</li><li>Производство</li><li>Доставка</li><li>Установка</li>
@@ -170,6 +172,75 @@
     </div>
   </section>
 
+  <section id="konstruktor" class="kon">
+    <div class="wrap">
+      <div class="sec-head row">
+        <div>
+          <span class="eyebrow">3D-конструктор</span>
+          <h2>Соберите шкаф-купе под&nbsp;свою стену</h2>
+        </div>
+        <p>Задайте размеры, двери и фасады — модель перестроится сразу. Сдвиньте двери, чтобы посмотреть наполнение.</p>
+      </div>
+      <div class="kon-grid">
+        <div class="kon-stage" id="kon-stage">
+          <p class="kon-load" id="kon-load">Загружаем 3D…</p>
+          <button class="kon-doors" id="kon-doors" type="button" aria-pressed="false" hidden>Сдвинуть двери</button>
+          <span class="kon-hint" id="kon-hint">Потяните, чтобы повернуть</span>
+        </div>
+        <form class="kon-panel" id="kon-form">
+          <div class="kon-size">
+            <label class="range"><span>Ширина <output name="wOut">2 400</output> мм</span><input type="range" name="w" min="1200" max="3600" step="50" value="2400"></label>
+            <label class="range"><span>Высота <output name="hOut">2 500</output> мм</span><input type="range" name="h" min="2000" max="2800" step="50" value="2500"></label>
+          </div>
+          <fieldset class="seg"><legend>Глубина, мм</legend>
+            <label><input type="radio" name="d" value="450"><span>450</span></label>
+            <label><input type="radio" name="d" value="600" checked><span>600</span></label>
+            <label><input type="radio" name="d" value="700"><span>700</span></label>
+          </fieldset>
+          <fieldset class="seg"><legend>Дверей</legend>
+            <label><input type="radio" name="doors" value="2"><span>2</span></label>
+            <label><input type="radio" name="doors" value="3" checked><span>3</span></label>
+            <label><input type="radio" name="doors" value="4"><span>4</span></label>
+          </fieldset>
+          <fieldset class="sw"><legend>Фасады <b data-out="facade">Зеркало</b></legend>
+            <label title="Зеркало"><input type="radio" name="facade" value="mirror" checked data-name="Зеркало"><span class="sw-mirror"></span></label>
+            <label title="Зеркало бронза"><input type="radio" name="facade" value="bronze" data-name="Зеркало бронза"><span class="sw-bronze"></span></label>
+            <label title="Дуб светлый"><input type="radio" name="facade" value="oak" data-name="Дуб светлый"><span style="background-image:url(tex/oak-s.webp)"></span></label>
+            <label title="Орех"><input type="radio" name="facade" value="walnut" data-name="Орех"><span style="background-image:url(tex/walnut-s.webp)"></span></label>
+            <label title="Ясень тёмный"><input type="radio" name="facade" value="ash" data-name="Ясень тёмный"><span style="background-image:url(tex/ash-dark-s.webp)"></span></label>
+            <label title="Дуб серый"><input type="radio" name="facade" value="grey" data-name="Дуб серый"><span style="background-image:url(tex/oak-grey-s.webp)"></span></label>
+            <label title="Белый матовый"><input type="radio" name="facade" value="white" data-name="Белый матовый"><span class="sw-white"></span></label>
+            <label title="Графит"><input type="radio" name="facade" value="graphite" data-name="Графит"><span class="sw-graphite"></span></label>
+            <label title="Дерево + зеркало через одну"><input type="radio" name="facade" value="mix" data-name="Через одну: зеркало и корпус"><span class="sw-mix"></span></label>
+            <label title="Комбинированные: дерево и полоса зеркала"><input type="radio" name="facade" value="combo" data-name="Дерево с полосой зеркала"><span class="sw-combo"></span></label>
+          </fieldset>
+          <div class="kon-two">
+            <fieldset class="sw sm"><legend>Корпус <b data-out="corpus">Дуб</b></legend>
+              <label title="Дуб"><input type="radio" name="corpus" value="oak" checked data-name="Дуб"><span style="background-image:url(tex/oak-s.webp)"></span></label>
+              <label title="Белый"><input type="radio" name="corpus" value="white" data-name="Белый"><span class="sw-white"></span></label>
+              <label title="Графит"><input type="radio" name="corpus" value="graphite" data-name="Графит"><span class="sw-graphite"></span></label>
+            </fieldset>
+            <fieldset class="sw sm"><legend>Профиль <b data-out="profile">Серебро</b></legend>
+              <label title="Серебро"><input type="radio" name="profile" value="silver" checked data-name="Серебро"><span class="sw-silver"></span></label>
+              <label title="Чёрный"><input type="radio" name="profile" value="black" data-name="Чёрный"><span class="sw-black"></span></label>
+              <label title="Золото"><input type="radio" name="profile" value="gold" data-name="Золото"><span class="sw-gold"></span></label>
+            </fieldset>
+          </div>
+          <fieldset class="seg"><legend>Наполнение</legend>
+            <label><input type="radio" name="interior" value="balanced" checked data-name="сбалансированное"><span>Поровну</span></label>
+            <label><input type="radio" name="interior" value="rails" data-name="больше штанг"><span>Больше штанг</span></label>
+            <label><input type="radio" name="interior" value="shelves" data-name="больше полок и ящиков"><span>Больше полок</span></label>
+          </fieldset>
+          <div class="kon-total">
+            <div><small>Ориентировочно</small><b data-out="price">—</b></div>
+            <button class="btn btn-main" type="submit">Отправить проект на замер</button>
+          </div>
+          <p class="kon-fine">Грубая оценка по размерам и материалам. Точную цену назовём после замера.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
   <section id="works" class="works">
     <div class="wrap">
       <div class="sec-head row">
@@ -228,6 +299,8 @@
       </div>
       <form class="form" id="lead" novalidate>
         <h3>Заявка на замер</h3>
+        <p class="form-project" hidden></p>
+        <input type="hidden" name="project">
         <fieldset>
           <legend>Что нужно</legend>
           <label><input type="checkbox" name="what" value="Шкаф-купе"><span>Шкаф-купе</span></label>
@@ -271,6 +344,16 @@
   <a class="btn btn-line" href="tel:+70000000000" aria-label="Позвонить">Позвонить</a>
 </div>
 
-<script src="main.js?v=1" defer></script>
+<script src="main.js?v=2" defer></script>
+<script type="module" src="konstruktor.js?v=1"></script>
+<script>
+  // the 3D module never ran (old browser, blocked script, failed download): say so instead of "loading" forever
+  addEventListener('load', function () {
+    setTimeout(function () {
+      var s = document.getElementById('kon-load');
+      if (!window.konStarted && s) s.textContent = '3D не загрузился. Размеры и цену можно подобрать справа.';
+    }, 4000);
+  });
+</script>
 </body>
 </html>

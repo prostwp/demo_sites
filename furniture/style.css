@@ -130,6 +130,55 @@ section { padding-block: clamp(72px, 10vw, 140px); }
 .step .get::before { content: "→"; color: var(--oak-light); }
 .path-note { margin-top: 40px; color: var(--dark-muted); font-size: 15px; max-width: 40em; }
 
+/* 3D configurator: the stage takes the room, the panel reads like a spec sheet */
+.kon { background: var(--paper-2); }
+.kon .sec-head.row p { max-width: 30em; }
+.kon-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 400px); gap: 20px; align-items: stretch; }
+.kon-stage { position: relative; min-height: 640px; border-radius: 4px; overflow: hidden; background: #E7E1D7; }
+.kon-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
+.kon-stage canvas:active { cursor: grabbing; }
+.kon-load { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); font-size: 15px; }
+.kon-load[hidden] { display: none; }
+.kon-doors { position: absolute; left: 16px; top: 16px; z-index: 2; font: 600 14.5px/1 var(--sans); color: var(--ink); background: rgba(251,249,245,.92); border: 1px solid var(--line); border-radius: 999px; padding: 12px 18px; cursor: pointer; }
+.kon-doors:hover { border-color: var(--ink); }
+.kon-doors[aria-pressed="true"] { background: var(--ink); color: var(--white); border-color: var(--ink); }
+.kon-hint { position: absolute; right: 16px; bottom: 16px; font: 500 11.5px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: rgba(251,249,245,.85); padding: 8px 10px; pointer-events: none; transition: opacity .4s; }
+.kon-panel { background: var(--white); border-radius: 4px; padding: 26px 24px; display: flex; flex-direction: column; gap: 20px; }
+.kon-panel fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.kon-panel legend { padding: 0; margin-bottom: 10px; font: 500 11.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.kon-panel legend b { font: 600 13.5px/1 var(--sans); letter-spacing: 0; text-transform: none; color: var(--ink); margin-left: 6px; }
+.kon-size { display: flex; flex-direction: column; gap: 16px; }
+.range { display: flex; flex-direction: column; gap: 8px; font: 500 11.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.range output { font: 600 20px/1 var(--sans); letter-spacing: -0.01em; color: var(--ink); margin: 0 2px 0 6px; }
+.range input { width: 100%; accent-color: var(--ink); height: 28px; margin: 0; }
+.kon-panel input[type="radio"] { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.seg { display: flex; flex-wrap: wrap; }
+.seg legend { width: 100%; }
+.seg label { flex: 1 1 0; cursor: pointer; }
+.seg span { display: block; text-align: center; padding: 11px 6px; border: 1.5px solid var(--line); margin-left: -1.5px; font-size: 14.5px; font-weight: 600; transition: background .15s, color .15s; white-space: nowrap; }
+.seg label:first-of-type span { border-radius: 8px 0 0 8px; margin-left: 0; }
+.seg label:last-of-type span { border-radius: 0 8px 8px 0; }
+.seg input:checked + span { background: var(--ink); border-color: var(--ink); color: var(--white); position: relative; }
+.seg input:disabled + span { opacity: .35; cursor: not-allowed; text-decoration: line-through; }
+.seg input:focus-visible + span, .sw input:focus-visible + span { outline: 2px solid var(--oak); outline-offset: 2px; position: relative; }
+.sw { display: flex; flex-wrap: wrap; gap: 8px; }
+.sw legend { width: 100%; }
+.sw label { cursor: pointer; }
+.sw span { display: block; width: 46px; height: 46px; border-radius: 50%; background-size: cover; background-position: center; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); outline: 2px solid transparent; outline-offset: 3px; transition: outline-color .15s; }
+.sw input:checked + span { outline-color: var(--ink); }
+.sw.sm span { width: 36px; height: 36px; }
+.sw-silver { background: linear-gradient(135deg, #F1F2F3, #A8ADB2 55%, #E2E4E6); }
+.sw-black { background: linear-gradient(135deg, #4A4A4C, #121213); }
+.sw-gold { background: linear-gradient(135deg, #F2DCAA, #B58C4B 55%, #E9CF97); }
+.sw-mix { background: linear-gradient(90deg, #E9EEF0 0 50%, transparent 50%), url(tex/oak-s.webp) center / cover; }
+.sw-combo { background: linear-gradient(180deg, transparent 0 32%, #E4EAED 32% 68%, transparent 68%), url(tex/walnut-s.webp) center / cover; }
+.kon-two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.kon-total { margin-top: auto; padding-top: 18px; border-top: 1.5px solid var(--ink); display: flex; flex-direction: column; gap: 14px; }
+.kon-total small { display: block; font: 500 11.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.kon-total b { font-family: var(--serif); font-size: 44px; font-weight: 500; line-height: 1; letter-spacing: -0.01em; }
+.kon-fine { font-size: 13px; color: var(--muted); margin-top: -6px; }
+.form-project { font-size: 14px; background: var(--paper); border-left: 3px solid var(--oak); padding: 10px 12px; border-radius: 4px; color: var(--ink-2); }
+
 /* works: editorial columns */
 .stub-note { font-size: 15px; color: var(--muted); border: 1px dashed #BDB2A1; padding: 10px 14px; border-radius: 6px; max-width: 26em; }
 .gallery { columns: 3; column-gap: 20px; }
@@ -220,6 +269,8 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   .path-view { display: none; }
   .step { opacity: 1; }
   .mat .wrap { grid-template-columns: minmax(0, 1fr); }
+  .kon-grid { grid-template-columns: minmax(0, 1fr); }
+  .kon-stage { min-height: 0; aspect-ratio: 4 / 3.8; }
   .zamer .wrap { grid-template-columns: minmax(0, 1fr); }
   .zamer::after { background: rgba(20,19,17,.78); }
 }
@@ -248,6 +299,12 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   .swatches li { font-size: 12.5px; }
   .c-grid { grid-template-columns: minmax(0, 1fr); }
   .callbar { display: flex; }
+  .kon-grid .wrap, .kon-grid { margin-inline: calc(-1 * max(20px, env(safe-area-inset-left))); gap: 0; }
+  .kon-stage, .kon-panel { border-radius: 0; }
+  .kon-stage { aspect-ratio: 1 / 1.05; }
+  .kon-panel { padding: 22px 20px; }
+  .sw span { width: 42px; height: 42px; }
+  .seg span { font-size: 13.5px; padding: 11px 4px; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
