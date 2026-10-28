@@ -13,6 +13,7 @@ const TEX = 1.1;             // metres of wood covered by one texture image
 // seeded, so changing a colour doesn't reshuffle the grain on every board
 let seed = 1;
 const rnd = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+export const reseed = () => { seed = 1; };
 
 // Box with UVs in world units, so wood grain keeps its scale on any size of part.
 // Grain runs vertically on uprights and along the width on horizontal boards.
@@ -52,7 +53,7 @@ const LAYOUTS = {
 // mats: { corpus, back, metal, chrome, facade(i, part) -> material }
 export function buildWardrobe(cfg, mats) {
   const { w, h, d, doors: n } = cfg;
-  seed = 1;
+  reseed();
   const parts = new Map(); // material -> geometries
   const add = (mat, g) => { if (!parts.has(mat)) parts.set(mat, []); parts.get(mat).push(g); };
   const iw = w - 2 * T;            // inner width

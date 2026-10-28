@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="style.css?v=3">
 <link rel="preload" as="image" href="img/hero.webp">
 <script type="importmap">{"imports":{"three":"./vendor/three.min.js"}}</script>
 </head>
@@ -177,9 +177,9 @@
       <div class="sec-head row">
         <div>
           <span class="eyebrow">3D-конструктор</span>
-          <h2>Соберите шкаф-купе под&nbsp;свою стену</h2>
+          <h2>Соберите шкаф-купе или&nbsp;кухню под&nbsp;свои стены</h2>
         </div>
-        <p>Задайте размеры, двери и фасады — модель перестроится сразу. Сдвиньте двери, чтобы посмотреть наполнение.</p>
+        <p>Задайте размеры и материалы — модель перестроится сразу. Модули кухни расставляются сами: мойка, посудомойка, плита, духовой шкаф, холодильник.</p>
       </div>
       <div class="kon-grid">
         <div class="kon-stage" id="kon-stage">
@@ -188,6 +188,47 @@
           <span class="kon-hint" id="kon-hint">Потяните, чтобы повернуть</span>
         </div>
         <form class="kon-panel" id="kon-form">
+          <fieldset class="kon-tabs"><legend class="sr">Что собираем</legend>
+            <label><input type="radio" name="kind" value="wardrobe" checked><span>Шкаф-купе</span></label>
+            <label><input type="radio" name="kind" value="kitchen"><span>Кухня</span></label>
+          </fieldset>
+          <div class="kon-group" data-kind="kitchen" hidden>
+            <fieldset class="seg"><legend>Планировка</legend>
+              <label><input type="radio" name="layout" value="line" checked data-name="прямая"><span>Прямая</span></label>
+              <label><input type="radio" name="layout" value="l" data-name="угловая"><span>Угловая</span></label>
+            </fieldset>
+            <div class="kon-size">
+              <label class="range"><span>Основная стена <output name="aOut">3 200</output> мм</span><input type="range" name="a" min="1800" max="4800" step="50" value="3200"></label>
+              <label class="range" data-l hidden><span>Боковая стена <output name="bOut">2 200</output> мм</span><input type="range" name="b" min="1200" max="3600" step="50" value="2200"></label>
+            </div>
+            <fieldset class="sw"><legend>Фасады <b data-out="front">Шалфей</b></legend>
+              <label title="Белая эмаль"><input type="radio" name="front" value="white" data-name="Белая эмаль"><span class="sw-white"></span></label>
+              <label title="Кашемир"><input type="radio" name="front" value="cashmere" data-name="Кашемир"><span style="background:#D6C8B4"></span></label>
+              <label title="Шалфей"><input type="radio" name="front" value="sage" checked data-name="Шалфей"><span style="background:#8C9883"></span></label>
+              <label title="Тёмно-синий"><input type="radio" name="front" value="navy" data-name="Тёмно-синий"><span style="background:#2F3A4A"></span></label>
+              <label title="Графит"><input type="radio" name="front" value="graphite" data-name="Графит"><span class="sw-graphite"></span></label>
+              <label title="Дуб"><input type="radio" name="front" value="oak" data-name="Дуб"><span style="background-image:url(tex/oak-s.webp)"></span></label>
+              <label title="Орех"><input type="radio" name="front" value="walnut" data-name="Орех"><span style="background-image:url(tex/walnut-s.webp)"></span></label>
+            </fieldset>
+            <fieldset class="sw"><legend>Столешница <b data-out="top">Светлый камень</b></legend>
+              <label title="Светлый камень"><input type="radio" name="top" value="marble" checked data-name="Светлый камень"><span class="sw-marble"></span></label>
+              <label title="Чёрный камень"><input type="radio" name="top" value="black" data-name="Чёрный камень"><span style="background:#1E1E1F"></span></label>
+              <label title="Бетон"><input type="radio" name="top" value="concrete" data-name="Бетон"><span style="background:#A29E96"></span></label>
+              <label title="Дуб"><input type="radio" name="top" value="oak" data-name="Дуб"><span style="background-image:url(tex/oak-s.webp)"></span></label>
+            </fieldset>
+            <fieldset class="seg"><legend>Верх</legend>
+              <label><input type="radio" name="upper" value="cab" checked data-name="верхние шкафы"><span>Шкафы</span></label>
+              <label><input type="radio" name="upper" value="high" data-name="шкафы до потолка"><span>До потолка</span></label>
+              <label><input type="radio" name="upper" value="shelf" data-name="открытые полки"><span>Полки</span></label>
+              <label><input type="radio" name="upper" value="none" data-name="без верхних шкафов"><span>Без верха</span></label>
+            </fieldset>
+            <fieldset class="seg"><legend>Ручки</legend>
+              <label><input type="radio" name="handles" value="gola" checked data-name="профиль Gola"><span>Профиль</span></label>
+              <label><input type="radio" name="handles" value="bar" data-name="скобы"><span>Скобы</span></label>
+              <label><input type="radio" name="handles" value="push" data-name="без ручек, push-to-open"><span>Без ручек</span></label>
+            </fieldset>
+          </div>
+          <div class="kon-group" data-kind="wardrobe">
           <div class="kon-size">
             <label class="range"><span>Ширина <output name="wOut">2 400</output> мм</span><input type="range" name="w" min="1200" max="3600" step="50" value="2400"></label>
             <label class="range"><span>Высота <output name="hOut">2 500</output> мм</span><input type="range" name="h" min="2000" max="2800" step="50" value="2500"></label>
@@ -231,11 +272,12 @@
             <label><input type="radio" name="interior" value="rails" data-name="больше штанг"><span>Больше штанг</span></label>
             <label><input type="radio" name="interior" value="shelves" data-name="больше полок и ящиков"><span>Больше полок</span></label>
           </fieldset>
+          </div>
           <div class="kon-total">
             <div><small>Ориентировочно</small><b data-out="price">—</b></div>
             <button class="btn btn-main" type="submit">Отправить проект на замер</button>
           </div>
-          <p class="kon-fine">Грубая оценка по размерам и материалам. Точную цену назовём после замера.</p>
+          <p class="kon-fine">Грубая оценка по размерам и материалам, техника не входит. Точную цену назовём после замера.</p>
         </form>
       </div>
     </div>
@@ -344,8 +386,8 @@
   <a class="btn btn-line" href="tel:+70000000000" aria-label="Позвонить">Позвонить</a>
 </div>
 
-<script src="main.js?v=2" defer></script>
-<script type="module" src="konstruktor.js?v=1"></script>
+<script src="main.js?v=3" defer></script>
+<script type="module" src="konstruktor.js?v=2"></script>
 <script>
   // the 3D module never ran (old browser, blocked script, failed download): say so instead of "loading" forever
   addEventListener('load', function () {

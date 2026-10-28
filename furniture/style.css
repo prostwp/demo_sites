@@ -172,6 +172,15 @@ section { padding-block: clamp(72px, 10vw, 140px); }
 .sw-gold { background: linear-gradient(135deg, #F2DCAA, #B58C4B 55%, #E9CF97); }
 .sw-mix { background: linear-gradient(90deg, #E9EEF0 0 50%, transparent 50%), url(tex/oak-s.webp) center / cover; }
 .sw-combo { background: linear-gradient(180deg, transparent 0 32%, #E4EAED 32% 68%, transparent 68%), url(tex/walnut-s.webp) center / cover; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.kon-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--paper); border-radius: 999px; }
+.kon-tabs label { cursor: pointer; }
+.kon-tabs span { display: block; text-align: center; padding: 12px 8px; border-radius: 999px; font-weight: 600; font-size: 15.5px; transition: background .2s, color .2s; }
+.kon-tabs input:checked + span { background: var(--ink); color: var(--white); }
+.kon-tabs input:focus-visible + span { outline: 2px solid var(--oak); outline-offset: 2px; }
+.kon-group { display: flex; flex-direction: column; gap: 20px; }
+.kon-group[hidden], .range[hidden] { display: none; }
+.sw-marble { background: linear-gradient(125deg, transparent 40%, rgba(120,118,122,.35) 44%, transparent 48%), linear-gradient(160deg, #F4F2EE, #E4E1DB); }
 .kon-two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .kon-total { margin-top: auto; padding-top: 18px; border-top: 1.5px solid var(--ink); display: flex; flex-direction: column; gap: 14px; }
 .kon-total small { display: block; font: 500 11.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }

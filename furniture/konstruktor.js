@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { RoomEnvironment } from "./vendor/addons/environments/RoomEnvironment.js";
 import { OrbitControls } from "./vendor/addons/controls/OrbitControls.js";
 import { buildWardrobe } from "./wardrobe.js";
+import { buildKitchen } from "./kitchen.js";
 
 window.konStarted = true; // the page's fallback text checks this
 
@@ -93,6 +94,29 @@ function init() {
   const chrome = new THREE.MeshStandardMaterial({ color: 0xeeeeee, metalness: 1, roughness: 0.15 });
   const back = { oak: plain(0xd9c4a5, 0.8), white: plain(0xece8e1, 0.8), graphite: plain(0x4a4947, 0.8) };
 
+  // kitchen: satin enamel fronts, stone or wood worktops, black glass appliances
+  const enamel = (color) => new THREE.MeshPhysicalMaterial({ color, roughness: 0.42, clearcoat: 0.3, clearcoatRoughness: 0.35 });
+  const FRONT = {
+    white: enamel(0xf1eee8), cashmere: enamel(0xd6c8b4), sage: enamel(0x8c9883), navy: enamel(0x2f3a4a), graphite: enamel(0x393939),
+    oak: MAT.oak, walnut: MAT.walnut,
+  };
+  const WORKTOP = {
+    marble: new THREE.MeshPhysicalMaterial({ map: canvasTex(marble), roughness: 0.2, clearcoat: 0.5, clearcoatRoughness: 0.15 }),
+    black: new THREE.MeshPhysicalMaterial({ map: canvasTex(speckle("#1b1b1c", 14)), roughness: 0.3, clearcoat: 0.4, clearcoatRoughness: 0.2 }),
+    concrete: new THREE.MeshStandardMaterial({ map: canvasTex(speckle("#a29e96", 22)), roughness: 0.85 }),
+    oak: ldsp(tex.oak, 0xe9dccb),
+  };
+  const KM = {
+    carcass: plain(0xe9e4dc, 0.75),
+    plinth: plain(0x2c2b29, 0.7),
+    steel: new THREE.MeshStandardMaterial({ color: 0xcfd2d4, metalness: 1, roughness: 0.28 }),
+    glass: new THREE.MeshPhysicalMaterial({ color: 0x0c0c0d, roughness: 0.08, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.03 }),
+    chrome,
+    shelf: MAT.oak,
+    led: new THREE.MeshBasicMaterial({ color: 0xffe2b0, toneMapped: false }),
+    hob: new THREE.MeshPhysicalMaterial({ map: canvasTex(hob, 512), roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.03 }),
+  };
+
   // room: a floor and the wall the wardrobe stands against
   const floorTex = wood("oak-grey");
   floorTex.repeat.set(9, 9);
@@ -106,7 +130,12 @@ function init() {
   wall.receiveShadow = true;
   const skirting = new THREE.Mesh(new THREE.BoxGeometry(14, 0.07, 0.014), plain(0xf2eee8, 0.6));
   skirting.position.set(0, 0.035, 0.007);
-  scene.add(floor, wall, skirting);
+  // the left wall only shows up for an L-shaped kitchen
+  const sideWall = new THREE.Mesh(new THREE.PlaneGeometry(8, 6), wall.material);
+  sideWall.rotation.y = Math.PI / 2;
+  sideWall.receiveShadow = true;
+  sideWall.visible = false;
+  scene.add(floor, wall, skirting, sideWall);
   const contact = contactShadow();
   scene.add(contact);
 
@@ -127,14 +156,46 @@ function init() {
   camera.position.set(0.9, 1.5, 5);
   controls.target.set(0, 1.2, 0.3);
 
-  let current = null, dims = null, cfg = null;
+  let current = null, dims = null, cfg = null, size = null, sizeKey = "";
   let fitDist = 5, opening = 0; // opening: 0 closed, 1 back doors slid left, 2 front doors slid right
 
   function rebuild(next) {
-    const prevSize = cfg && cfg.w === next.w && cfg.h === next.h && cfg.d === next.d;
     cfg = next;
     if (current) { scene.remove(current.group); current.group.traverse((o) => o.geometry?.dispose()); }
     if (dims) { scene.remove(dims); dims.traverse((o) => { o.geometry?.dispose(); o.material?.map?.dispose(); o.material?.dispose(); }); }
+    if (cfg.kind === "kitchen") buildKitchenScene();
+    else buildWardrobeScene();
+    // shadows cover whatever was built
+    const half = Math.max(size.w, size.d) / 2 + 1;
+    Object.assign(sun.shadow.camera, { left: -half, right: half, top: size.h + 1, bottom: -1 });
+    sun.target.position.set(0, 0, size.d / 2);
+    sun.position.set(-3.4, 3.3, 2.7 + size.d / 2);
+    sun.shadow.camera.updateProjectionMatrix();
+    renderer.shadowMap.needsUpdate = true;
+    const key = [cfg.kind, size.w, size.h, size.d].join();
+    if (key !== sizeKey) { sizeKey = key; frame3(true); }
+    wake();
+  }
+
+  function buildKitchenScene() {
+    const L = cfg.layout === "l";
+    current = buildKitchen(cfg, { ...KM, front: FRONT[cfg.front] || FRONT.white, top: WORKTOP[cfg.top] || WORKTOP.marble, splash: WORKTOP[cfg.top] || WORKTOP.marble });
+    current.group.position.x = -cfg.a / 2;
+    current.doors = [];
+    scene.add(current.group);
+    size = { w: cfg.a, h: current.height, d: L ? cfg.b : 0.6 };
+    sideWall.visible = L;
+    sideWall.position.set(-cfg.a / 2 - 0.001, 3, 4);
+    dims = drawDims(current.dims.map((d) => ({ ...d, a: [d.a[0] - cfg.a / 2, d.a[1], d.a[2]], b: [d.b[0] - cfg.a / 2, d.b[1], d.b[2]] })));
+    scene.add(dims);
+    contact.scale.set(cfg.a + 0.4, 1, L ? cfg.b + 0.3 : 1.1);
+    contact.position.set(0, 0.001, L ? cfg.b / 2 : 0.35);
+    doorsBtn.hidden = true;
+  }
+
+  function buildWardrobeScene() {
+    sideWall.visible = false;
+    doorsBtn.hidden = false;
     const facade = (i) => {
       if (cfg.facade === "combo") return [MAT[cfg.corpus === "white" ? "oak" : cfg.corpus] || MAT.oak, MAT.mirror, MAT[cfg.corpus === "white" ? "oak" : cfg.corpus] || MAT.oak];
       if (cfg.facade === "mix") return i % 2 ? MAT.mirror : MAT[cfg.corpus === "white" ? "white" : cfg.corpus];
@@ -143,15 +204,17 @@ function init() {
     const corpus = cfg.corpus === "white" ? MAT.white : cfg.corpus === "graphite" ? MAT.graphite : MAT.oak;
     current = buildWardrobe(cfg, { corpus, back: back[cfg.corpus] || back.oak, metal: PROFILE[cfg.profile] || PROFILE.silver, chrome, facade });
     scene.add(current.group);
-    current.doors.forEach((dr) => { dr.userData.x = dr.position.x; });
     applyOpening(true);
-    dims = dimensions(cfg);
+    const { w, h, d } = cfg;
+    size = { w, h, d };
+    dims = drawDims([
+      { a: [-w / 2, h + 0.14, d], b: [w / 2, h + 0.14, d], tick: [0, 1, 0], text: w },
+      { a: [-w / 2 - 0.14, 0, d], b: [-w / 2 - 0.14, h, d], tick: [1, 0, 0], text: h },
+      { a: [w / 2 + 0.16, 0.002, 0], b: [w / 2 + 0.16, 0.002, d], tick: [1, 0, 0], text: d, at: [w / 2 + 0.18, 0.09, d / 2] },
+    ]);
     scene.add(dims);
-    contact.scale.set(cfg.w + 0.5, 1, cfg.d + 0.6);
-    contact.position.set(0, 0.001, cfg.d / 2 + 0.05);
-    renderer.shadowMap.needsUpdate = true;
-    if (!prevSize) frame3(true);
-    wake();
+    contact.scale.set(w + 0.5, 1, d + 0.6);
+    contact.position.set(0, 0.001, d / 2 + 0.05);
   }
 
   // where each door should go for the current opening state
@@ -175,11 +238,11 @@ function init() {
 
   // frame the whole wardrobe with its dimension lines; keep the visitor's viewing angle
   function frame3(keepAngle) {
-    const r = Math.hypot(cfg.w + 0.5, cfg.h + 0.3) / 2;
+    const r = Math.hypot(Math.max(size.w, size.d * 0.9) + 0.5, size.h + 0.3) / 2;
     const vFov = THREE.MathUtils.degToRad(camera.fov);
     const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
     fitDist = (r / Math.sin(Math.min(vFov, hFov) / 2)) * 0.98;
-    controls.target.set(0, cfg.h * 0.5, cfg.d * 0.5);
+    controls.target.set(0, size.h * 0.5, Math.min(size.d * 0.5, 1.4));
     if (!keepAngle || reduceMotion) placeCamera(fitDist);
   }
   const dir = new THREE.Vector3();
@@ -192,7 +255,6 @@ function init() {
   if (window.wardrobe) rebuild(window.wardrobe);
   addEventListener("wardrobe:change", (e) => rebuild(e.detail));
   status.hidden = true;
-  doorsBtn.hidden = false;
   // start from a three-quarter view
   camera.position.copy(controls.target).add(new THREE.Vector3(0.35, 0.12, 1).normalize().multiplyScalar(fitDist));
 
@@ -238,27 +300,20 @@ function init() {
   resize();
 }
 
-// dimension lines like on a measurement sheet: width on top, height on the left, depth on the floor
-function dimensions(cfg) {
+// dimension lines like on a measurement sheet: each is a line with end ticks and its length in mm
+function drawDims(list) {
   const g = new THREE.Group();
   const mat = new THREE.LineBasicMaterial({ color: 0x2a2824 });
-  const line = (pts) => g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts.map((p) => new THREE.Vector3(...p))), mat));
-  const tick = 0.05;
-  const { w, h, d } = cfg;
-  const yW = h + 0.14, xH = -w / 2 - 0.14, xD = w / 2 + 0.16;
-  line([[-w / 2, yW, d], [w / 2, yW, d]]);
-  line([[-w / 2, yW - tick, d], [-w / 2, yW + tick, d]]);
-  line([[w / 2, yW - tick, d], [w / 2, yW + tick, d]]);
-  line([[xH, 0, d], [xH, h, d]]);
-  line([[xH - tick, 0, d], [xH + tick, 0, d]]);
-  line([[xH - tick, h, d], [xH + tick, h, d]]);
-  line([[xD, 0.002, 0], [xD, 0.002, d]]);
-  line([[xD - tick, 0.002, 0], [xD + tick, 0.002, 0]]);
-  line([[xD - tick, 0.002, d], [xD + tick, 0.002, d]]);
+  const line = (p, q) => g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([p, q]), mat));
   const mm = (m) => Math.round(m * 1000).toLocaleString("ru-RU");
-  g.add(label(mm(w), 0, yW + 0.0, d));
-  g.add(label(mm(h), xH, h / 2, d));
-  g.add(label(mm(d), xD + 0.02, 0.09, d / 2));
+  for (const d of list) {
+    const a = new THREE.Vector3(...d.a), b = new THREE.Vector3(...d.b), t = new THREE.Vector3(...d.tick).multiplyScalar(0.05);
+    line(a, b);
+    line(a.clone().sub(t), a.clone().add(t));
+    line(b.clone().sub(t), b.clone().add(t));
+    const at = d.at ? new THREE.Vector3(...d.at) : a.clone().add(b).multiplyScalar(0.5);
+    g.add(label(mm(d.text), at.x, at.y, at.z));
+  }
   return g;
 }
 
@@ -333,4 +388,73 @@ function contactShadow() {
   const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false }));
   m.rotation.x = -Math.PI / 2;
   return m;
+}
+
+// procedural surfaces, painted once on a canvas
+function canvasTex(paint, size = 1024) {
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  paint(c.getContext("2d"), size);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.MirroredRepeatWrapping;
+  t.anisotropy = 4;
+  return t;
+}
+
+// white stone with soft grey veins
+function marble(g, s) {
+  g.fillStyle = "#f2f0eb";
+  g.fillRect(0, 0, s, s);
+  let seed = 7;
+  const r = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const vein = (width, alpha, blur) => {
+    g.filter = "blur(" + blur + "px)";
+    g.strokeStyle = "rgba(118,116,120," + alpha + ")";
+    g.lineWidth = width;
+    g.beginPath();
+    let x = r() * s, y = -20, a = 0.6 + r() * 0.8;
+    g.moveTo(x, y);
+    while (y < s + 20 && x > -50 && x < s + 50) {
+      a += (r() - 0.5) * 0.22; // gentle drift: long flowing veins, not a web
+      x += Math.cos(a) * 26;
+      y += Math.abs(Math.sin(a)) * 26 + 6;
+      g.lineTo(x, y);
+    }
+    g.stroke();
+  };
+  for (let i = 0; i < 5; i++) vein(18 + r() * 24, 0.07, 14);
+  for (let i = 0; i < 5; i++) vein(1.2 + r() * 2, 0.22, 1);
+  g.filter = "none";
+}
+
+// flecked surface: black stone or concrete
+function speckle(base, spread) {
+  return (g, s) => {
+    g.fillStyle = base;
+    g.fillRect(0, 0, s, s);
+    const img = g.getImageData(0, 0, s, s), d = img.data;
+    let seed = 3;
+    for (let i = 0; i < d.length; i += 4) {
+      seed = (seed * 16807) % 2147483647;
+      const n = (seed / 2147483647 - 0.5) * spread;
+      d[i] += n; d[i + 1] += n; d[i + 2] += n;
+    }
+    g.putImageData(img, 0, 0);
+  };
+}
+
+// induction hob: four zones and a touch strip
+function hob(g, s) {
+  g.fillStyle = "#0d0d0e";
+  g.fillRect(0, 0, s, s);
+  g.strokeStyle = "rgba(235,235,235,.38)";
+  g.lineWidth = 3;
+  [[0.3, 0.3, 0.17], [0.72, 0.3, 0.13], [0.3, 0.72, 0.13], [0.72, 0.7, 0.17]].forEach(([x, y, r]) => {
+    g.beginPath();
+    g.arc(x * s, y * s, r * s, 0, Math.PI * 2);
+    g.stroke();
+  });
+  g.fillStyle = "rgba(235,235,235,.45)";
+  for (let i = 0; i < 6; i++) g.fillRect(s * (0.32 + i * 0.07), s * 0.94, s * 0.03, s * 0.012);
 }
